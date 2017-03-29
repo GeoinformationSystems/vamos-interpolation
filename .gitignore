@@ -1,0 +1,6 @@
+.idea
+.git
+/locations-mapped-densified.csv
+/value_points.vrt
+/cellmask.tif
+/cellmask.tif.aux.xml
