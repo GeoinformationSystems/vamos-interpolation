@@ -67,7 +67,18 @@ process_points() {
     r.mapcalc "masked_grow_value = cellmask + grow_value"
     g.remove -f type=raster name=grow_value  # remove old data
 
-    r.out.gdal --overwrite -c createopt="TILED=YES,COMPRESS=DEFLATE" input=masked_grow_value output="$basedir/value_raster.tif"
+    # ORIGINAL r.out.gdal command
+    #r.out.gdal --overwrite -c createopt="TILED=YES,COMPRESS=DEFLATE" input=masked_grow_value output="$basedir/value_raster.tif"
+
+    # r.out.gdal is buggy in recent grass releases and may omit some elements of the SRS definition
+    # see https://trac.osgeo.org/grass/ticket/3048
+    #
+    # BEGIN workaround
+    r.out.gdal --overwrite -c createopt="TILED=YES,COMPRESS=DEFLATE" input=masked_grow_value output="$basedir/value_raster_grass.tif"
+    gdal_translate -a_srs EPSG:25833 -co COMPRESS=DEFLATE -co TILED=YES value_raster_grass.tif value_raster.tif
+    rm value_raster_grass.tif
+    # END workaround
+    
     gdaladdo --config COMPRESS_OVERVIEW DEFLATE -r NEAREST value_raster.tif 4 8 16 32 64
     gdalinfo -stats value_raster.tif
 
